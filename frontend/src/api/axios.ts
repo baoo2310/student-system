@@ -1,5 +1,6 @@
 import axios, { type InternalAxiosRequestConfig, type AxiosResponse, type AxiosError } from 'axios';
 import toast from 'react-hot-toast';
+import { store } from '../store/store';
 
 const api = axios.create({
     baseURL: 'http://localhost:3000/api',
@@ -7,7 +8,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('token');
+    const token = store.getState().user.token;
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -17,6 +18,11 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 api.interceptors.response.use(
     (response: AxiosResponse) => response,
     (error: AxiosError<any>) => {
+        // Skip automatic error toasts for the refresh token endpoint
+        if (error.config?.url?.includes('/auth/refresh')) {
+            return Promise.reject(error);
+        }
+
         const data = error.response?.data;
 
         // Handle array of errors from validation middleware

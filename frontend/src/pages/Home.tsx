@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store/store';
 import { UserRole } from '@shared/index';
@@ -8,6 +10,16 @@ import InstructorDashboard from './HomeComponents/InstructorDashboard/Instructor
 
 export default function Home() {
     const { currentUser, isAuthenticated } = useSelector((state: RootState) => state.user);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!isAuthenticated) {
+            const timer = setTimeout(() => {
+                navigate('/login');
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [isAuthenticated, navigate]);
 
     // Fallback if user is not loaded yet or not authenticated
     if (!isAuthenticated) {
@@ -17,7 +29,7 @@ export default function Home() {
                     <div className="flex">
                         <div className="ml-3">
                             <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                                You are not logged in. Please log in to view your dashboard.
+                                You are not logged in. Redirecting to login page in 3 seconds...
                             </p>
                         </div>
                     </div>

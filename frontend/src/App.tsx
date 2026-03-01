@@ -1,7 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Provider } from 'react-redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
-import { store } from './store/store';
+import { store, type RootState } from './store/store';
+import { setCredentials, logout } from './store/userSlice';
+import { authApi } from './api/auth.api';
+import { useState, useEffect } from 'react';
 
 import AppBar from './components/AppBar/AppBar';
 import Home from './pages/Home';
@@ -9,14 +12,55 @@ import AuthLayout from './pages/auth/Auth';
 import LoginForm from './pages/auth/LoginForm';
 import RegisterForm from './pages/auth/RegisterForm';
 import VerifyEmail from './pages/auth/VerifyEmail';
+import NotFound from './pages/NotFound';
+import Profile from './pages/Profile/Profile';
+import FindInstructors from './pages/FindInstructors/FindInstructors';
+import MyMatches from './pages/MyMatches/MyMatches';
 
 function AppContent() {
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state: RootState) => state.user);
+  const [isRestoring, setIsRestoring] = useState(true);
+
+  useEffect(() => {
+    const restoreSession = async () => {
+      if (isAuthenticated) {
+        setIsRestoring(false);
+        return;
+      }
+
+      try {
+        const res = await authApi.refreshToken();
+        if (res.success) {
+          dispatch(setCredentials({ user: res.data.user, token: res.data.accessToken }));
+          setIsRestoring(false);
+          return;
+        }
+      } catch (err) {
+        // It's expected to fail if user hasn't logged in recently (cookie expired or missing)
+      }
+
+      dispatch(logout());
+      setIsRestoring(false);
+    };
+
+    restoreSession();
+  }, [dispatch, isAuthenticated]);
+
+  if (isRestoring) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
       <Routes>
-        <Route path="/auth" element={<AuthLayout />}>
-          <Route path="login" element={<LoginForm />} />
-          <Route path="register" element={<RegisterForm />} />
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/register" element={<RegisterForm />} />
         </Route>
 
         <Route path="/verify-email" element={<VerifyEmail />} />
@@ -27,8 +71,12 @@ function AppContent() {
             <AppBar />
             <main>
               <Routes>
+                <Route path="/" element={<Navigate to="/home" replace />} />
                 <Route path="/home" element={<Home />} />
-                <Route path="*" element={<Navigate to="/home" replace />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/instructors" element={<FindInstructors />} />
+                <Route path="/matches" element={<MyMatches />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
           </>
@@ -44,7 +92,7 @@ function App() {
       <Router>
         <AppContent />
         <Toaster
-          position="top-right"
+          position="bottom-right"
           toastOptions={{
             className: 'dark:bg-gray-800 dark:text-white',
           }}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { authApi } from '../../api/auth.api';
 
@@ -8,17 +8,23 @@ export default function VerifyEmail() {
 
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
 
+    const hasAttempted = React.useRef(false);
+
     useEffect(() => {
         if (!token) {
             setStatus('error');
             return;
         }
 
+        if (hasAttempted.current) return;
+        hasAttempted.current = true;
+
         const verify = async () => {
             try {
                 await authApi.verifyEmail(token);
                 setStatus('success');
             } catch (err: any) {
+                // If it fails, we still show error. But we prevent the double fire.
                 setStatus('error');
             }
         };
@@ -51,7 +57,7 @@ export default function VerifyEmail() {
                             Your account has been verified successfully. You can now log in to the Student System.
                         </p>
                         <Link
-                            to="/auth/login"
+                            to="/login"
                             className="w-full inline-flex justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
                         >
                             Login to your account
@@ -73,7 +79,7 @@ export default function VerifyEmail() {
                             The verification token is invalid or has expired. Please try registering again or contact support.
                         </p>
                         <Link
-                            to="/auth/register"
+                            to="/register"
                             className="w-full inline-flex justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                         >
                             Back to Registration

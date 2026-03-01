@@ -7,6 +7,7 @@ import prisma from '../lib/prisma';
 import { generateAccessToken, generateRefreshToken } from '../lib/jwt.provider';
 import { sendVerificationEmail } from '../lib/mail.provider';
 import { RegisterBody, LoginBody } from '../model/user.types';
+import jwt from 'jsonwebtoken';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -81,11 +82,18 @@ export async function register(req: Request, res: Response, next: NextFunction):
         // Generate token pair
         const tokens = makeTokenPair(user.id, user.email, user.role);
 
+        res.cookie('refreshToken', tokens.refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
         res.status(StatusCodes.CREATED).json({
             success: true,
             message: 'Account created successfully. Please check your email to verify your account.',
             data: {
-                ...tokens,
+                accessToken: tokens.accessToken,
                 user: {
                     id: user.id,
                     username: user.username,
@@ -136,11 +144,18 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
         // Generate token pair
         const tokens = makeTokenPair(user.id, user.email, user.role);
 
+        res.cookie('refreshToken', tokens.refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
         res.status(StatusCodes.OK).json({
             success: true,
             message: 'Login successful.',
             data: {
-                ...tokens,
+                accessToken: tokens.accessToken,
                 user: {
                     id: user.id,
                     username: user.username,
@@ -221,6 +236,67 @@ export async function getMe(req: Request, res: Response, next: NextFunction): Pr
                 majors: user.majors.map((um: typeof user.majors[number]) => um.major),
             },
         });
+    } catch (err) {
+        next(err);
+    }
+}
+
+// ─── Refresh Token ────────────────────────────────────────────────────────────
+
+export async function refreshToken(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        const token = req.cookies.refreshToken;
+        if (!token) {
+            res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: 'No refresh token provided.' });
+            return;
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET!) as { userId: string; email: string; role: string };
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.userId }
+        });
+
+        if (!user || !user.isActive) {
+            res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: 'User not valid or inactive.' });
+            return;
+        }
+
+        const newTokens = makeTokenPair(user.id, user.email, user.role);
+
+        res.cookie('refreshToken', newTokens.refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+        res.status(StatusCodes.OK).json({
+            success: true,
+            data: {
+                accessToken: newTokens.accessToken,
+                user: {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                    role: user.role,
+                    isActive: user.isActive,
+                    avatarUrl: user.avatarUrl,
+                },
+            }
+        });
+    } catch (err) {
+        // If the token is invalid or expired, clear the cookie
+        res.clearCookie('refreshToken');
+        res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: 'Invalid or expired refresh token.' });
+    }
+}
+
+// ─── Logout ───────────────────────────────────────────────────────────────────
+
+export async function logout(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        res.clearCookie('refreshToken');
+        res.status(StatusCodes.OK).json({ success: true, message: 'Successfully logged out.' });
     } catch (err) {
         next(err);
     }

@@ -4,9 +4,13 @@ import './config/env'; // Validates required env vars on startup
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 import authRoutes from './routes/auth.routes';
+import profileRoutes from './routes/profile.routes';
+import majorRoutes from './routes/major.routes';
+import matchRoutes from './routes/match.routes';
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 import { errorHandler } from './middleware/error.middleware';
+import cookieParser from 'cookie-parser';
 
 const app: Application = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +22,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // ─── Health Check ─────────────────────────────────────────────────────────────
 app.get('/', (req: Request, res: Response) => {
@@ -25,10 +30,13 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
+
 app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/majors', majorRoutes);
+app.use('/api/matches', matchRoutes);
 
 // app.use('/api/users', userRoutes);       // coming soon
-// app.use('/api/majors', majorRoutes);     // coming soon
 // app.use('/api/courses', courseRoutes);   // coming soon
 // app.use('/api/enrollments', enrollmentRoutes); // coming soon
 // app.use('/api/match-requests', matchRequestRoutes); // coming soon
