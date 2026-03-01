@@ -25,5 +25,20 @@ export const authApi = {
     verifyEmail: async (token: string): Promise<any> => {
         const response = await api.get(`/auth/verify?token=${token}`);
         return response.data;
+    },
+
+    getMe: async (): Promise<any> => {
+        const response = await api.get('/auth/me');
+        return response.data;
+    },
+
+    refreshToken: async (): Promise<any> => {
+        const response = await api.post('/auth/refresh');
+        return response.data;
+    },
+
+    logout: async (): Promise<any> => {
+        const response = await api.post('/auth/logout');
+        return response.data;
     }
 };

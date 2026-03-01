@@ -11,4 +11,17 @@ export interface User {
     username: string;
     email: string;
     role: UserRole;
+    avatarUrl?: string;
+    profile?: {
+        bio?: string;
+        hourlyRate?: string;
+    };
+    majors?: Major[];
 }
+
+export interface Major {
+    id: string;
+    name: string;
+    description?: string;
+}
+

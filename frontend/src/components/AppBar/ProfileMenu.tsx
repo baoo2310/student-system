@@ -1,10 +1,17 @@
 import { Link } from 'react-router-dom';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
 import { useState, useRef, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import toast from 'react-hot-toast';
+import { logout } from '../../store/userSlice';
+import type { RootState } from '../../store/store';
+import { authApi } from '../../api/auth.api';
 
 export default function ProfileMenu() {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const dispatch = useDispatch();
+    const { currentUser } = useSelector((state: RootState) => state.user);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -17,6 +24,21 @@ export default function ProfileMenu() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    const handleSignOut = async () => {
+        setIsOpen(false);
+        try {
+            await authApi.logout();
+            toast.success("Signed out successfully");
+        } catch (err) {
+            console.error('Failed to log out on backend:', err);
+        }
+        dispatch(logout());
+    };
+
+    if (!currentUser) {
+        return null;
+    }
+
     return (
         <div className="relative" ref={dropdownRef}>
             <button
@@ -25,14 +47,22 @@ export default function ProfileMenu() {
                 aria-haspopup="true"
                 aria-expanded={isOpen}
             >
-                <UserCircleIcon className="w-8 h-8 text-gray-600 dark:text-gray-300" />
+                {currentUser.avatarUrl ? (
+                    <img
+                        src={currentUser.avatarUrl}
+                        alt="Profile"
+                        className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                    />
+                ) : (
+                    <UserCircleIcon className="w-8 h-8 text-gray-600 dark:text-gray-300" />
+                )}
             </button>
 
             {isOpen && (
                 <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 border border-gray-200 dark:border-gray-700 z-50 transform opacity-100 scale-100 transition-all origin-top-right">
                     <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700 mb-1">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">John Doe</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">john@student-system.com</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{currentUser.username}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{currentUser.email}</p>
                     </div>
                     <Link
                         to="/profile"
@@ -43,10 +73,7 @@ export default function ProfileMenu() {
                     </Link>
                     <button
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        onClick={() => {
-                            setIsOpen(false);
-                            // TODO: Dispatch logout action
-                        }}
+                        onClick={handleSignOut}
                     >
                         Sign out
                     </button>

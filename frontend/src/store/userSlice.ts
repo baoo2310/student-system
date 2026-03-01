@@ -10,7 +10,7 @@ interface UserState {
 const initialState: UserState = {
     currentUser: null,
     isAuthenticated: false,
-    token: localStorage.getItem('token'),
+    token: null,
 };
 
 export const userSlice = createSlice({
@@ -24,17 +24,23 @@ export const userSlice = createSlice({
             state.currentUser = action.payload.user;
             state.token = action.payload.token;
             state.isAuthenticated = true;
-            localStorage.setItem('token', action.payload.token);
+        },
+        updateProfileSuccess: (state, action: PayloadAction<User>) => {
+            state.currentUser = action.payload;
+        },
+        updateMajorsSuccess: (state, action: PayloadAction<any[]>) => {
+            if (state.currentUser) {
+                state.currentUser.majors = action.payload;
+            }
         },
         logout: (state) => {
             state.currentUser = null;
             state.token = null;
             state.isAuthenticated = false;
-            localStorage.removeItem('token');
         },
     },
 });
 
-export const { setCredentials, logout } = userSlice.actions;
+export const { setCredentials, logout, updateProfileSuccess, updateMajorsSuccess } = userSlice.actions;
 
 export default userSlice.reducer;
