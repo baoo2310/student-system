@@ -12,7 +12,7 @@ export const env = {
     JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET as string,
     JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
     // App
-    APP_URL: process.env.APP_URL || 'http://localhost:3000',
+    APP_URL: process.env.APP_URL || 'http://localhost:5173',
     // SMTP
     SMTP_HOST: process.env.SMTP_HOST as string,
     SMTP_PORT: parseInt(process.env.SMTP_PORT || '465', 10),
