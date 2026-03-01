@@ -1,0 +1,9 @@
+{
+    "name": "student-system",
+    "private": true,
+    "workspaces": [
+        "backend",
+        "frontend",
+        "shared"
+    ]
+}
