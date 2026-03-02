@@ -1,18 +1,42 @@
 import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import bcrypt from 'bcryptjs';
 import prisma from '../lib/prisma';
 
 export async function updateProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
         const userId = req.user!.userId;
-        const { bio, hourlyRate, avatarUrl } = req.body;
+        const { bio, hourlyRate, avatarUrl, oldPassword, newPassword } = req.body;
 
         const updatedUser = await prisma.$transaction(async (tx) => {
-            // Update User avatar if provided
+            const updateData: any = {};
+
             if (avatarUrl !== undefined) {
+                updateData.avatarUrl = avatarUrl;
+            }
+
+            if (oldPassword && newPassword) {
+                const user = await tx.user.findUnique({
+                    where: { id: userId }
+                });
+
+                if (!user) {
+                    throw new Error('User not found');
+                }
+
+                const isMatch = await bcrypt.compare(oldPassword, user.passwordHash);
+                if (!isMatch) {
+                    throw new Error('INVALID_PASSWORD');
+                }
+
+                updateData.passwordHash = await bcrypt.hash(newPassword, 12);
+            }
+
+            // Update User avatar and/or password if provided
+            if (Object.keys(updateData).length > 0) {
                 await tx.user.update({
                     where: { id: userId },
-                    data: { avatarUrl },
+                    data: updateData,
                 });
             }
 
@@ -42,7 +66,14 @@ export async function updateProfile(req: Request, res: Response, next: NextFunct
             message: 'Profile updated successfully.',
             data: updatedUser,
         });
-    } catch (err) {
+    } catch (err: any) {
+        if (err.message === 'INVALID_PASSWORD') {
+            res.status(StatusCodes.UNAUTHORIZED).json({
+                success: false,
+                message: 'The current password you entered is incorrect.'
+            });
+            return;
+        }
         next(err);
     }
 }
