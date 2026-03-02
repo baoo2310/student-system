@@ -17,7 +17,7 @@ export default function AppBar() {
                     </div>
 
                     {/* Navigation Links */}
-                    <div className="hidden md:flex items-center space-x-6">
+                    <div className="hidden md:flex flex-1 items-center justify-center space-x-8">
                         <Link to="/instructors" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
                             Find Instructors
                         </Link>

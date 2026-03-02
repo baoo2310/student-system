@@ -6,6 +6,8 @@ import type { RootState } from '../../store/store';
 import { updateProfileSuccess, updateMajorsSuccess } from '../../store/userSlice';
 import toast from 'react-hot-toast';
 
+import CreatableSelect from 'react-select/creatable';
+
 export default function GeneralTab() {
     const dispatch = useDispatch();
     const { currentUser, token } = useSelector((state: RootState) => state.user);
@@ -16,12 +18,13 @@ export default function GeneralTab() {
     const [avatarUrl, setAvatarUrl] = useState(currentUser?.avatarUrl || '');
     const [bio, setBio] = useState(currentUser?.profile?.bio || '');
     const [hourlyRate, setHourlyRate] = useState(currentUser?.profile?.hourlyRate || '');
-    const [selectedMajors, setSelectedMajors] = useState<string[]>(
-        currentUser?.majors?.map(m => m.id) || []
+
+    // Instead of string[], we keep { label, value } for react-select
+    const [selectedMajors, setSelectedMajors] = useState<{ label: string; value: string }[]>(
+        currentUser?.majors?.map(m => ({ label: m.name, value: m.id })) || []
     );
 
     useEffect(() => {
-        // Fetch the available subjects/majors from the backend
         const fetchMajors = async () => {
             try {
                 const res = await fetch('http://localhost:3000/api/majors');
@@ -77,13 +80,14 @@ export default function GeneralTab() {
         setIsLoading(true);
 
         try {
+            const majorIds = selectedMajors.map(m => m.value);
             const res = await fetch('http://localhost:3000/api/profile/majors', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 },
-                body: JSON.stringify({ majorIds: selectedMajors })
+                body: JSON.stringify({ majorIds })
             });
 
             const data = await res.json();
@@ -102,13 +106,41 @@ export default function GeneralTab() {
         }
     };
 
-    const toggleMajor = (id: string) => {
-        setSelectedMajors(prev =>
-            prev.includes(id) ? prev.filter(mId => mId !== id) : [...prev, id]
-        );
+    const handleCreateMajor = async (inputValue: string) => {
+        setIsLoading(true);
+        try {
+            const res = await fetch('http://localhost:3000/api/majors', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ name: inputValue })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                const newMajor = data.data;
+                const newOption = { label: newMajor.name, value: newMajor.id };
+                setAllMajors(prev => [...prev, newMajor]);
+                setSelectedMajors(prev => [...prev, newOption]);
+                toast.success(`Created new subject: ${inputValue}`);
+            } else {
+                toast.error(data.message || 'Failed to create subject');
+            }
+        } catch (err) {
+            console.error('Failed to create major:', err);
+            toast.error('An error occurred while creating the subject.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     if (!currentUser) return null;
+
+    // React-select options formatting
+    const majorOptions = allMajors.map(m => ({ label: m.name, value: m.id }));
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
@@ -169,34 +201,62 @@ export default function GeneralTab() {
                     {currentUser.role === UserRole.INSTRUCTOR ? 'Subjects You Teach' : 'Subjects of Interest'}
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                    Select the areas to help us match you with the right people.
+                    {currentUser.role === UserRole.INSTRUCTOR
+                        ? 'Select or create areas to help us match you with the right people.'
+                        : 'Select the areas you want to learn.'}
                 </p>
 
                 <form onSubmit={handleMajorsSubmit}>
-                    <div className="space-y-3 max-h-80 overflow-y-auto pr-2 mb-6">
-                        {allMajors.length === 0 ? (
-                            <p className="text-sm text-gray-500">No subjects found.</p>
+                    <div className="mb-6">
+                        {currentUser.role === UserRole.INSTRUCTOR ? (
+                            <CreatableSelect
+                                isMulti
+                                isLoading={isLoading}
+                                options={majorOptions}
+                                value={selectedMajors}
+                                onChange={(newValue) => setSelectedMajors(newValue as any)}
+                                onCreateOption={handleCreateMajor}
+                                placeholder="Search or type to create..."
+                                className="react-select-container"
+                                classNamePrefix="react-select"
+                                styles={{
+                                    control: (base) => ({
+                                        ...base,
+                                        borderColor: '#D1D5DB', // gray-300
+                                        borderRadius: '0.5rem',
+                                        padding: '2px',
+                                        boxShadow: 'none',
+                                        '&:hover': {
+                                            borderColor: '#3B82F6' // blue-500
+                                        }
+                                    })
+                                }}
+                            />
                         ) : (
-                            allMajors.map(major => (
-                                <label key={major.id} className="flex items-center space-x-3 p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedMajors.includes(major.id)}
-                                        onChange={() => toggleMajor(major.id)}
-                                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:checked:bg-blue-500 transition-colors"
-                                    />
-                                    <div className="flex-1">
-                                        <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">
-                                            {major.name}
-                                        </div>
-                                        {major.description && (
-                                            <div className="text-gray-500 dark:text-gray-400 text-xs">
-                                                {major.description}
-                                            </div>
-                                        )}
-                                    </div>
-                                </label>
-                            ))
+                            <CreatableSelect
+                                isMulti
+                                isLoading={isLoading}
+                                options={majorOptions}
+                                value={selectedMajors}
+                                onChange={(newValue) => setSelectedMajors(newValue as any)}
+                                placeholder="Search subjects..."
+                                // Students cannot create subjects, they can only search
+                                isValidNewOption={() => false}
+                                className="react-select-container"
+                                classNamePrefix="react-select"
+                                styles={{
+                                    control: (base) => ({
+                                        ...base,
+                                        borderColor: '#D1D5DB', // gray-300
+                                        borderRadius: '0.5rem',
+                                        padding: '2px',
+                                        boxShadow: 'none',
+                                        '&:hover': {
+                                            borderColor: '#3B82F6' // blue-500
+                                        }
+                                    })
+                                }}
+                            />
                         )}
                     </div>
 
