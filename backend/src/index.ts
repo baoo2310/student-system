@@ -7,6 +7,7 @@ import authRoutes from './routes/auth.routes';
 import profileRoutes from './routes/profile.routes';
 import majorRoutes from './routes/major.routes';
 import matchRoutes from './routes/match.routes';
+import instructorRoutes from './routes/instructor.routes';
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 import { errorHandler } from './middleware/error.middleware';
@@ -35,6 +36,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/majors', majorRoutes);
 app.use('/api/matches', matchRoutes);
+app.use('/api/instructors', instructorRoutes);
 
 // app.use('/api/users', userRoutes);       // coming soon
 // app.use('/api/courses', courseRoutes);   // coming soon

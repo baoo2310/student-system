@@ -15,6 +15,7 @@ import VerifyEmail from './pages/auth/VerifyEmail';
 import NotFound from './pages/NotFound';
 import Profile from './pages/Profile/Profile';
 import FindInstructors from './pages/FindInstructors/FindInstructors';
+import InstructorDetails from './pages/InstructorDetails/InstructorDetails';
 import MyMatches from './pages/MyMatches/MyMatches';
 
 function AppContent() {
@@ -75,6 +76,7 @@ function AppContent() {
                 <Route path="/home" element={<Home />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/instructors" element={<FindInstructors />} />
+                <Route path="/instructors/:id" element={<InstructorDetails />} />
                 <Route path="/matches" element={<MyMatches />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
