@@ -8,5 +8,9 @@ export const profileUpdateSchema = Joi.object({
     }),
     avatarUrl: Joi.string().uri().allow('', null).optional().messages({
         'string.uri': 'Avatar URL must be a valid URI.'
+    }),
+    oldPassword: Joi.string().optional(),
+    newPassword: Joi.string().min(6).optional().messages({
+        'string.min': 'New password must be at least 6 characters long.'
     })
 });
