@@ -23,9 +23,21 @@ export default function AppBar() {
 
                     {/* Navigation Links */}
                     <div className="hidden md:flex flex-1 items-center justify-center space-x-8">
-                        {currentUser?.role === UserRole.STUDENT && <Link to="/instructors" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
-                            Find Instructors
-                        </Link>}
+                        <Link to="/courses" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                            Courses
+                        </Link>
+
+                        {currentUser?.role === UserRole.INSTRUCTOR && (
+                            <Link to="/my-courses" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                                My Courses
+                            </Link>
+                        )}
+
+                        {currentUser?.role === UserRole.STUDENT && (
+                            <Link to="/instructors" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                                Find Instructors
+                            </Link>
+                        )}
                         <Link to="/matches" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
                             My Matches
                         </Link>

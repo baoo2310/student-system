@@ -13,11 +13,15 @@ import AuthLayout from './pages/auth/Auth';
 import LoginForm from './pages/auth/LoginForm';
 import RegisterForm from './pages/auth/RegisterForm';
 import VerifyEmail from './pages/auth/VerifyEmail';
-import NotFound from './pages/NotFound';
 import Profile from './pages/Profile/Profile';
 import FindInstructors from './pages/FindInstructors/FindInstructors';
 import InstructorDetails from './pages/InstructorDetails/InstructorDetails';
 import MyMatches from './pages/MyMatches/MyMatches';
+
+import CourseList from './pages/Courses/CourseList';
+import CourseDetails from './pages/Courses/CourseDetails';
+import MyCourses from './pages/Courses/MyCourses';
+import CreateCourse from './pages/Courses/CreateCourse';
 
 function AppContent() {
   const dispatch = useDispatch();
@@ -82,7 +86,16 @@ function AppContent() {
                 <Route path="/instructors" element={<FindInstructors />} />
                 <Route path="/instructors/:id" element={<InstructorDetails />} />
                 <Route path="/matches" element={<MyMatches />} />
-                <Route path="*" element={<NotFound />} />
+
+                <Route path="/courses" element={<CourseList />} />
+                <Route path="/courses/:id" element={<CourseDetails />} />
+
+                {/* We just check INSTRUCTOR manually inside components, or rely on lack of API access for now */}
+                {/* For real protection, we would use a ProtectedRoute abstraction */}
+                <Route path="/my-courses" element={<MyCourses />} />
+                <Route path="/courses/create" element={<CreateCourse />} />
+
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
           </>
