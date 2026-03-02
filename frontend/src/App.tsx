@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from './hooks/useTheme';
 
 import AppBar from './components/AppBar/AppBar';
+import Footer from './components/Footer/Footer';
 import Home from './pages/Home';
 import AuthLayout from './pages/auth/Auth';
 import LoginForm from './pages/auth/LoginForm';
@@ -22,6 +23,9 @@ import CourseList from './pages/Courses/CourseList';
 import CourseDetails from './pages/Courses/CourseDetails';
 import MyCourses from './pages/Courses/MyCourses';
 import CreateCourse from './pages/Courses/CreateCourse';
+
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import Settings from './pages/Settings/Settings';
 
 function AppContent() {
   const dispatch = useDispatch();
@@ -95,9 +99,13 @@ function AppContent() {
                 <Route path="/my-courses" element={<MyCourses />} />
                 <Route path="/courses/create" element={<CreateCourse />} />
 
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/settings" element={<Settings />} />
+
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
+            <Footer />
           </>
         } />
       </Routes>
