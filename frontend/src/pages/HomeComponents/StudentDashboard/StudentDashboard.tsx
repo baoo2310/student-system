@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { matchApi } from '../../../api/match.api';
 import { Link } from 'react-router-dom';
+import type { MatchRequest } from '@shared/index';
 
 export default function StudentDashboard() {
-    const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+    const [pendingRequests, setPendingRequests] = useState<MatchRequest[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -12,7 +13,7 @@ export default function StudentDashboard() {
                 const data = await matchApi.getUserMatches();
                 if (data.success) {
                     // Filter for PENDING status
-                    setPendingRequests(data.data.filter((m: any) => m.status === 'PENDING'));
+                    setPendingRequests(data.data.filter((m: MatchRequest) => m.status === 'PENDING'));
                 }
             } catch (err) {
                 console.error('Failed to fetch matches:', err);
@@ -76,7 +77,7 @@ export default function StudentDashboard() {
                                 <div>
                                     <p className="font-medium text-gray-900 dark:text-white">{request.instructor.username}</p>
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Mentoring for {request.major ? request.major.name : 'General Subject'}
+                                        Mentoring for {request.instructor.majors ? request.instructor.majors.map((major) => major.name) : 'General Subject'}
                                     </p>
                                 </div>
                                 <span className="inline-flex items-center rounded-md bg-yellow-50 dark:bg-yellow-900/30 px-2 py-1 text-xs font-medium text-yellow-800 dark:text-yellow-500 ring-1 ring-inset ring-yellow-600/20">

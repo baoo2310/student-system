@@ -5,6 +5,7 @@ import { store, type RootState } from './store/store';
 import { setCredentials, logout } from './store/userSlice';
 import { authApi } from './api/auth.api';
 import { useState, useEffect } from 'react';
+import { useTheme } from './hooks/useTheme';
 
 import AppBar from './components/AppBar/AppBar';
 import Home from './pages/Home';
@@ -22,6 +23,9 @@ function AppContent() {
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state: RootState) => state.user);
   const [isRestoring, setIsRestoring] = useState(true);
+
+  // Initialize theme detector so root document gets correct classes on load
+  useTheme();
 
   useEffect(() => {
     const restoreSession = async () => {

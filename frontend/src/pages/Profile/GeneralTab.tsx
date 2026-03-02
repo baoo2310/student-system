@@ -4,6 +4,7 @@ import { UserRole } from '@shared/index';
 import type { Major } from '@shared/index';
 import type { RootState } from '../../store/store';
 import { updateProfileSuccess, updateMajorsSuccess } from '../../store/userSlice';
+import { useTheme } from '../../hooks/useTheme';
 import toast from 'react-hot-toast';
 
 import CreatableSelect from 'react-select/creatable';
@@ -11,6 +12,7 @@ import CreatableSelect from 'react-select/creatable';
 export default function GeneralTab() {
     const dispatch = useDispatch();
     const { currentUser, token } = useSelector((state: RootState) => state.user);
+    const { resolvedTheme } = useTheme();
 
     const [isLoading, setIsLoading] = useState(false);
     const [allMajors, setAllMajors] = useState<Major[]>([]);
@@ -222,14 +224,46 @@ export default function GeneralTab() {
                                 styles={{
                                     control: (base) => ({
                                         ...base,
-                                        borderColor: '#D1D5DB', // gray-300
+                                        backgroundColor: resolvedTheme === 'dark' ? '#374151' : 'white',
+                                        borderColor: resolvedTheme === 'dark' ? '#4B5563' : '#D1D5DB', // gray-600 vs gray-300
                                         borderRadius: '0.5rem',
                                         padding: '2px',
                                         boxShadow: 'none',
                                         '&:hover': {
                                             borderColor: '#3B82F6' // blue-500
                                         }
-                                    })
+                                    }),
+                                    menu: (base) => ({
+                                        ...base,
+                                        backgroundColor: resolvedTheme === 'dark' ? '#1F2937' : 'white', // gray-800
+                                        color: resolvedTheme === 'dark' ? '#F3F4F6' : '#111827', // gray-100 vs gray-900
+                                    }),
+                                    option: (base, state) => ({
+                                        ...base,
+                                        backgroundColor: state.isFocused
+                                            ? (resolvedTheme === 'dark' ? '#374151' : '#F3F4F6') // gray-700 vs gray-100
+                                            : 'transparent',
+                                        color: resolvedTheme === 'dark' ? '#F3F4F6' : '#111827',
+                                        '&:active': {
+                                            backgroundColor: resolvedTheme === 'dark' ? '#4B5563' : '#E5E7EB', // gray-600 vs gray-200
+                                        }
+                                    }),
+                                    multiValue: (base) => ({
+                                        ...base,
+                                        backgroundColor: resolvedTheme === 'dark' ? '#4B5563' : '#E5E7EB', // gray-600 vs gray-200
+                                    }),
+                                    multiValueLabel: (base) => ({
+                                        ...base,
+                                        color: resolvedTheme === 'dark' ? '#F9FAFB' : '#111827', // gray-50 vs gray-900
+                                    }),
+                                    multiValueRemove: (base) => ({
+                                        ...base,
+                                        color: resolvedTheme === 'dark' ? '#F9FAFB' : '#111827',
+                                        ':hover': {
+                                            backgroundColor: resolvedTheme === 'dark' ? '#EF4444' : '#F87171', // red-500 vs red-400
+                                            color: 'white',
+                                        },
+                                    }),
                                 }}
                             />
                         ) : (
@@ -247,14 +281,46 @@ export default function GeneralTab() {
                                 styles={{
                                     control: (base) => ({
                                         ...base,
-                                        borderColor: '#D1D5DB', // gray-300
+                                        backgroundColor: resolvedTheme === 'dark' ? '#374151' : 'white',
+                                        borderColor: resolvedTheme === 'dark' ? '#4B5563' : '#D1D5DB', // gray-600 vs gray-300
                                         borderRadius: '0.5rem',
                                         padding: '2px',
                                         boxShadow: 'none',
                                         '&:hover': {
                                             borderColor: '#3B82F6' // blue-500
                                         }
-                                    })
+                                    }),
+                                    menu: (base) => ({
+                                        ...base,
+                                        backgroundColor: resolvedTheme === 'dark' ? '#1F2937' : 'white', // gray-800
+                                        color: resolvedTheme === 'dark' ? '#F3F4F6' : '#111827', // gray-100 vs gray-900
+                                    }),
+                                    option: (base, state) => ({
+                                        ...base,
+                                        backgroundColor: state.isFocused
+                                            ? (resolvedTheme === 'dark' ? '#374151' : '#F3F4F6') // gray-700 vs gray-100
+                                            : 'transparent',
+                                        color: resolvedTheme === 'dark' ? '#F3F4F6' : '#111827',
+                                        '&:active': {
+                                            backgroundColor: resolvedTheme === 'dark' ? '#4B5563' : '#E5E7EB', // gray-600 vs gray-200
+                                        }
+                                    }),
+                                    multiValue: (base) => ({
+                                        ...base,
+                                        backgroundColor: resolvedTheme === 'dark' ? '#4B5563' : '#E5E7EB', // gray-600 vs gray-200
+                                    }),
+                                    multiValueLabel: (base) => ({
+                                        ...base,
+                                        color: resolvedTheme === 'dark' ? '#F9FAFB' : '#111827', // gray-50 vs gray-900
+                                    }),
+                                    multiValueRemove: (base) => ({
+                                        ...base,
+                                        color: resolvedTheme === 'dark' ? '#F9FAFB' : '#111827',
+                                        ':hover': {
+                                            backgroundColor: resolvedTheme === 'dark' ? '#EF4444' : '#F87171', // red-500 vs red-400
+                                            color: 'white',
+                                        },
+                                    }),
                                 }}
                             />
                         )}
