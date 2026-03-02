@@ -8,6 +8,8 @@ import profileRoutes from './routes/profile.routes';
 import majorRoutes from './routes/major.routes';
 import matchRoutes from './routes/match.routes';
 import instructorRoutes from './routes/instructor.routes';
+import courseRoutes from './routes/course.routes';
+import enrollmentRoutes from './routes/enrollment.routes';
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 import { errorHandler } from './middleware/error.middleware';
@@ -37,10 +39,10 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/majors', majorRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/instructors', instructorRoutes);
+app.use('/api/courses', courseRoutes);
+app.use('/api/enrollments', enrollmentRoutes);
 
 // app.use('/api/users', userRoutes);       // coming soon
-// app.use('/api/courses', courseRoutes);   // coming soon
-// app.use('/api/enrollments', enrollmentRoutes); // coming soon
 // app.use('/api/match-requests', matchRequestRoutes); // coming soon
 
 // ─── Global Error Handler (must be last) ─────────────────────────────────────
