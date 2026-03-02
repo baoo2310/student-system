@@ -1,4 +1,10 @@
 // Export shared types, interfaces, enums, etc.
+export enum MatchStatus {
+    PENDING = 'PENDING',
+    ACCEPTED = 'ACCEPTED',
+    REJECTED = 'REJECTED',
+    COMPLETED = 'COMPLETED'
+}
 
 export enum UserRole {
     STUDENT = 'STUDENT',
@@ -25,3 +31,9 @@ export interface Major {
     description?: string;
 }
 
+export interface MatchRequest {
+    id: string;
+    student: User;
+    instructor: User;
+    status: MatchStatus;
+}
