@@ -10,6 +10,8 @@ export default function FindInstructors() {
     const [majors, setMajors] = useState<any[]>([]);
     const [selectedMajor, setSelectedMajor] = useState<string>('');
     const [isLoading, setIsLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 6;
 
     useEffect(() => {
         // Fetch all majors for the dropdown filter
@@ -89,7 +91,10 @@ export default function FindInstructors() {
                     </label>
                     <select
                         value={selectedMajor}
-                        onChange={(e) => setSelectedMajor(e.target.value)}
+                        onChange={(e) => {
+                            setSelectedMajor(e.target.value);
+                            setCurrentPage(1); // Reset page on filter change
+                        }}
                         className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white transition-colors"
                     >
                         <option value="">All Subjects</option>
@@ -109,51 +114,75 @@ export default function FindInstructors() {
                     <p className="text-xl text-gray-500 dark:text-gray-400">No instructors found matching your criteria.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-                    {instructors.map((instructor) => (
-                        <div key={instructor.id} className="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6 flex flex-col hover:shadow-lg transition-shadow">
-                            <div className="flex items-center space-x-4 mb-4">
-                                {instructor.avatarUrl ? (
-                                    <img src={instructor.avatarUrl} alt={instructor.username} className="h-16 w-16 rounded-full object-cover border border-gray-200 dark:border-gray-600" />
-                                ) : (
-                                    <div className="h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 text-2xl font-bold">
-                                        {instructor.username.charAt(0).toUpperCase()}
+                <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in mb-8">
+                        {instructors.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((instructor) => (
+                            <div key={instructor.id} className="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6 flex flex-col hover:shadow-lg transition-shadow">
+                                <div className="flex items-center space-x-4 mb-4">
+                                    {instructor.avatarUrl ? (
+                                        <img src={instructor.avatarUrl} alt={instructor.username} className="h-16 w-16 rounded-full object-cover border border-gray-200 dark:border-gray-600" />
+                                    ) : (
+                                        <div className="h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 text-2xl font-bold">
+                                            {instructor.username.charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">{instructor.username}</h3>
+                                        {instructor.profile?.hourlyRate && (
+                                            <p className="text-sm text-green-600 dark:text-green-400 font-medium">${instructor.profile.hourlyRate}/hr</p>
+                                        )}
                                     </div>
-                                )}
-                                <div>
-                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">{instructor.username}</h3>
-                                    {instructor.profile?.hourlyRate && (
-                                        <p className="text-sm text-green-600 dark:text-green-400 font-medium">${instructor.profile.hourlyRate}/hr</p>
+                                </div>
+
+                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3 overflow-hidden flex-grow">
+                                    {instructor.profile?.bio || 'No bio provided for this instructor.'}
+                                </p>
+
+                                <div className="mb-6 flex flex-wrap gap-2">
+                                    {instructor.majors?.slice(0, 3).map((m: any) => (
+                                        <span key={m.major.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                            {m.major.name}
+                                        </span>
+                                    ))}
+                                    {instructor.majors?.length > 3 && (
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                                            +{instructor.majors.length - 3} more
+                                        </span>
                                     )}
                                 </div>
+
+                                <Link
+                                    to={`/instructors/${instructor.id}`}
+                                    className="w-full mt-auto block text-center py-2 px-4 shadow-sm text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-black dark:bg-gray-700 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                                >
+                                    View Profile
+                                </Link>
                             </div>
+                        ))}
+                    </div>
 
-                            <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3 overflow-hidden flex-grow">
-                                {instructor.profile?.bio || 'No bio provided for this instructor.'}
-                            </p>
-
-                            <div className="mb-6 flex flex-wrap gap-2">
-                                {instructor.majors?.slice(0, 3).map((m: any) => (
-                                    <span key={m.major.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                                        {m.major.name}
-                                    </span>
-                                ))}
-                                {instructor.majors?.length > 3 && (
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                                        +{instructor.majors.length - 3} more
-                                    </span>
-                                )}
-                            </div>
-
-                            <Link
-                                to={`/instructors/${instructor.id}`}
-                                className="w-full mt-auto block text-center py-2 px-4 shadow-sm text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-black dark:bg-gray-700 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                    {instructors.length > ITEMS_PER_PAGE && (
+                        <div className="flex justify-center items-center space-x-2 pb-10">
+                            <button
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
                             >
-                                View Profile
-                            </Link>
+                                Previous
+                            </button>
+                            <span className="text-sm text-gray-700 dark:text-gray-300">
+                                Page {currentPage} of {Math.ceil(instructors.length / ITEMS_PER_PAGE)}
+                            </span>
+                            <button
+                                onClick={() => setCurrentPage(p => Math.min(Math.ceil(instructors.length / ITEMS_PER_PAGE), p + 1))}
+                                disabled={currentPage === Math.ceil(instructors.length / ITEMS_PER_PAGE)}
+                                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition-colors"
+                            >
+                                Next
+                            </button>
                         </div>
-                    ))}
-                </div>
+                    )}
+                </>
             )}
         </div>
     );

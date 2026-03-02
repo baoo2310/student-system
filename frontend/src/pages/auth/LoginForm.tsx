@@ -47,7 +47,7 @@ export default function LoginForm() {
                     Welcome Back
                 </h2>
                 <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
-                    Sign in to access your dashboard, courses, and match requests.
+                    Sign in Student System
                 </p>
             </div>
 
