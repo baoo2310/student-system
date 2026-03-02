@@ -2,8 +2,13 @@ import { Link } from 'react-router-dom';
 import ModeSelector from './ModeSelector';
 import ProfileMenu from './ProfileMenu';
 import NotificationBell from './NotificationBell';
+import { useSelector } from 'react-redux';
+import type { RootState } from 'src/store/store';
+import { UserRole } from '@shared/index';
+import Setting from './Setting';
 
 export default function AppBar() {
+    const { currentUser } = useSelector((state: RootState) => state.user);
     return (
         <nav className="sticky top-0 z-50 w-full backdrop-blur-md bg-white/70 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -18,9 +23,9 @@ export default function AppBar() {
 
                     {/* Navigation Links */}
                     <div className="hidden md:flex flex-1 items-center justify-center space-x-8">
-                        <Link to="/instructors" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                        {currentUser?.role === UserRole.STUDENT && <Link to="/instructors" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
                             Find Instructors
-                        </Link>
+                        </Link>}
                         <Link to="/matches" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
                             My Matches
                         </Link>
@@ -31,6 +36,7 @@ export default function AppBar() {
 
                         <ModeSelector />
                         <NotificationBell />
+                        <Setting />
                         <ProfileMenu />
 
                     </div>
