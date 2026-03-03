@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import type { AppDispatch } from '../../store/store';
 import { logout } from '../../store/userSlice';
-import api from '../../api/axios';
+import { settingsApi } from '../../api/settings.api';
 import toast from 'react-hot-toast';
 import {
     Cog6ToothIcon,
@@ -37,8 +37,8 @@ export default function Settings() {
 
         setIsUpdatingPassword(true);
         try {
-            const res = await api.put('/settings/password', { currentPassword, newPassword });
-            if (res.data.success) {
+            const data = await settingsApi.updatePassword({ currentPassword, newPassword });
+            if (data.success) {
                 toast.success('Password updated successfully');
                 setCurrentPassword('');
                 setNewPassword('');
@@ -61,10 +61,8 @@ export default function Settings() {
 
         setIsDeletingAccount(true);
         try {
-            const res = await api.delete('/settings/account', {
-                data: { confirmPassword: deleteConfirmPassword } // axios delete requires payload in 'data' field
-            });
-            if (res.data.success) {
+            const data = await settingsApi.deleteAccount(deleteConfirmPassword);
+            if (data.success) {
                 toast.success('Account permanently deleted');
                 dispatch(logout());
                 navigate('/login');

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { fetchAllCourses } from '../../store/courseSlice';
 import type { RootState, AppDispatch } from '../../store/store';
 import { BookOpenIcon, UserCircleIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
-import api from '../../api/axios'; // Raw instance for getting majors quickly
+import { majorApi } from '../../api/major.api';
 
 export default function CourseList() {
     const dispatch = useDispatch<AppDispatch>();
@@ -18,9 +18,9 @@ export default function CourseList() {
         // Fetch majors for the filter dropdown
         const fetchMajors = async () => {
             try {
-                const res = await api.get('/majors');
-                if (res.data.success) {
-                    setMajors(res.data.data);
+                const data = await majorApi.getMajors();
+                if (data.success) {
+                    setMajors(data.data);
                 }
             } catch (err) {
                 console.error('Failed to load majors', err);
