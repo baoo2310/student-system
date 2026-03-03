@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../../store/store';
 import toast from 'react-hot-toast';
+import { profileApi } from '../../api/profile.api';
 
 export default function SecurityTab() {
-    const { token } = useSelector((state: RootState) => state.user);
 
     const [isLoading, setIsLoading] = useState(false);
     const [oldPassword, setOldPassword] = useState('');
@@ -22,31 +20,19 @@ export default function SecurityTab() {
         setIsLoading(true);
 
         try {
-            const res = await fetch('http://localhost:3000/api/profile', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    oldPassword,
-                    newPassword
-                })
+            const data = await profileApi.updatePassword({
+                oldPassword,
+                newPassword
             });
-
-            const data = await res.json();
 
             if (data.success) {
                 toast.success('Password updated successfully!');
                 setOldPassword('');
                 setNewPassword('');
                 setConfirmPassword('');
-            } else {
-                toast.error(data.message || data.errors?.[0] || 'Update failed');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            toast.error('An error occurred. Please try again.');
         } finally {
             setIsLoading(false);
         }

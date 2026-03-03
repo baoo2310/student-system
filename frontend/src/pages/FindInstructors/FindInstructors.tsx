@@ -3,9 +3,11 @@ import { useSelector } from 'react-redux';
 import { type RootState } from '../../store/store';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { majorApi } from '../../api/major.api';
+import { instructorApi } from '../../api/instructor.api';
 
 export default function FindInstructors() {
-    const { currentUser, token } = useSelector((state: RootState) => state.user);
+    const { currentUser } = useSelector((state: RootState) => state.user);
     const [instructors, setInstructors] = useState<any[]>([]);
     const [majors, setMajors] = useState<any[]>([]);
     const [selectedMajor, setSelectedMajor] = useState<string>('');
@@ -17,8 +19,7 @@ export default function FindInstructors() {
         // Fetch all majors for the dropdown filter
         const fetchMajors = async () => {
             try {
-                const res = await fetch('http://localhost:3000/api/majors');
-                const data = await res.json();
+                const data = await majorApi.getMajors();
                 if (data.success) {
                     setMajors(data.data);
                 }
@@ -35,12 +36,7 @@ export default function FindInstructors() {
         const fetchInstructors = async () => {
             setIsLoading(true);
             try {
-                const res = await fetch('http://localhost:3000/api/instructors', {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-                const data = await res.json();
+                const data = await instructorApi.getInstructors();
 
                 if (data.success) {
                     // Filter matching selected major on the frontend for now, or update backend to accept queries
@@ -63,7 +59,7 @@ export default function FindInstructors() {
         };
 
         fetchInstructors();
-    }, [selectedMajor, token]);
+    }, [selectedMajor]);
 
 
     if (currentUser?.role === 'INSTRUCTOR') {

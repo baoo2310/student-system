@@ -11,7 +11,7 @@ import {
     TagIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
-import api from '../../api/axios';
+import { majorApi } from '../../api/major.api';
 
 export default function CreateCourse() {
     const dispatch = useDispatch<AppDispatch>();
@@ -27,9 +27,9 @@ export default function CreateCourse() {
     useEffect(() => {
         const fetchMajors = async () => {
             try {
-                const res = await api.get('/majors');
-                if (res.data.success) {
-                    setMajors(res.data.data);
+                const data = await majorApi.getMajors();
+                if (data.success) {
+                    setMajors(data.data);
                 }
             } catch (err) {
                 console.error('Failed to load majors', err);

@@ -4,11 +4,12 @@ import { useSelector } from 'react-redux';
 import { type RootState } from '../../store/store';
 import { matchApi } from '../../api/match.api';
 import toast from 'react-hot-toast';
+import { instructorApi } from '../../api/instructor.api';
 
 export default function InstructorDetails() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { currentUser, token } = useSelector((state: RootState) => state.user);
+    const { currentUser } = useSelector((state: RootState) => state.user);
 
     const [instructor, setInstructor] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -22,12 +23,7 @@ export default function InstructorDetails() {
         const fetchInstructorDetails = async () => {
             setIsLoading(true);
             try {
-                const res = await fetch(`http://localhost:3000/api/instructors/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-                const data = await res.json();
+                const data = await instructorApi.getInstructorById(id!);
 
                 if (data.success) {
                     setInstructor(data.data);
@@ -51,7 +47,7 @@ export default function InstructorDetails() {
         if (id) {
             fetchInstructorDetails();
         }
-    }, [id, navigate, token]);
+    }, [id, navigate]);
 
     const handleOpenModal = () => {
         if (currentUser?.role === 'INSTRUCTOR') {
@@ -146,8 +142,8 @@ export default function InstructorDetails() {
                                 onClick={handleOpenModal}
                                 disabled={currentUser?.role === 'INSTRUCTOR'}
                                 className={`px-8 py-3 rounded-lg text-white font-semibold transition-colors shadow-md ${currentUser?.role === 'INSTRUCTOR'
-                                        ? 'bg-gray-400 cursor-not-allowed dark:bg-gray-600'
-                                        : 'bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-500/50'
+                                    ? 'bg-gray-400 cursor-not-allowed dark:bg-gray-600'
+                                    : 'bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-500/50'
                                     }`}
                             >
                                 Request Match
@@ -265,8 +261,8 @@ export default function InstructorDetails() {
                                 onClick={handleSubmitMatchRequest}
                                 disabled={isSubmitting || (instructor.majors?.length > 0 && !selectedMajor)}
                                 className={`px-5 py-2.5 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors shadow-sm ${(isSubmitting || (instructor.majors?.length > 0 && !selectedMajor))
-                                        ? 'opacity-70 cursor-not-allowed'
-                                        : ''
+                                    ? 'opacity-70 cursor-not-allowed'
+                                    : ''
                                     }`}
                             >
                                 {isSubmitting ? 'Sending Request...' : 'Send Request'}

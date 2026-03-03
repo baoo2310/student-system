@@ -6,12 +6,14 @@ import type { RootState } from '../../store/store';
 import { updateProfileSuccess, updateMajorsSuccess } from '../../store/userSlice';
 import { useTheme } from '../../hooks/useTheme';
 import toast from 'react-hot-toast';
+import { majorApi } from '../../api/major.api';
+import { profileApi } from '../../api/profile.api';
 
 import CreatableSelect from 'react-select/creatable';
 
 export default function GeneralTab() {
     const dispatch = useDispatch();
-    const { currentUser, token } = useSelector((state: RootState) => state.user);
+    const { currentUser } = useSelector((state: RootState) => state.user);
     const { resolvedTheme } = useTheme();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -29,8 +31,7 @@ export default function GeneralTab() {
     useEffect(() => {
         const fetchMajors = async () => {
             try {
-                const res = await fetch('http://localhost:3000/api/majors');
-                const data = await res.json();
+                const data = await majorApi.getMajors();
                 if (data.success) {
                     setAllMajors(data.data);
                 }
@@ -48,30 +49,19 @@ export default function GeneralTab() {
         setIsLoading(true);
 
         try {
-            const res = await fetch('http://localhost:3000/api/profile', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    avatarUrl,
-                    bio,
-                    hourlyRate: hourlyRate === '' ? null : Number(hourlyRate)
-                })
+            const data = await profileApi.updateProfile({
+                avatarUrl,
+                bio,
+                hourlyRate: hourlyRate === '' ? null : Number(hourlyRate)
             });
-
-            const data = await res.json();
 
             if (data.success) {
                 dispatch(updateProfileSuccess(data.data));
                 toast.success('Profile updated successfully!');
-            } else {
-                toast.error(data.message || data.errors?.[0] || 'Update failed');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            toast.error('An error occurred. Please try again.');
+            // toast handles the errors via interceptor mostly
         } finally {
             setIsLoading(false);
         }
@@ -83,26 +73,14 @@ export default function GeneralTab() {
 
         try {
             const majorIds = selectedMajors.map(m => m.value);
-            const res = await fetch('http://localhost:3000/api/profile/majors', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({ majorIds })
-            });
-
-            const data = await res.json();
+            const data = await profileApi.updateProfileMajors(majorIds);
 
             if (data.success) {
                 dispatch(updateMajorsSuccess(data.data));
                 toast.success('Subjects updated successfully!');
-            } else {
-                toast.error(data.message || data.errors?.[0] || 'Update failed');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            toast.error('An error occurred. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -111,16 +89,8 @@ export default function GeneralTab() {
     const handleCreateMajor = async (inputValue: string) => {
         setIsLoading(true);
         try {
-            const res = await fetch('http://localhost:3000/api/majors', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({ name: inputValue })
-            });
-
-            const data = await res.json();
+            // Using the new majorApi method instead of direct ad-hoc api post
+            const data = await majorApi.createMajor(inputValue);
 
             if (data.success) {
                 const newMajor = data.data;
@@ -128,12 +98,9 @@ export default function GeneralTab() {
                 setAllMajors(prev => [...prev, newMajor]);
                 setSelectedMajors(prev => [...prev, newOption]);
                 toast.success(`Created new subject: ${inputValue}`);
-            } else {
-                toast.error(data.message || 'Failed to create subject');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to create major:', err);
-            toast.error('An error occurred while creating the subject.');
         } finally {
             setIsLoading(false);
         }
