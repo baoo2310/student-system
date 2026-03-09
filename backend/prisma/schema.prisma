@@ -38,6 +38,15 @@ enum DayOfWeek {
   SUNDAY
 }
 
+enum NotificationType {
+  MATCH_REQUEST
+  MATCH_ACCEPTED
+  COURSE_ENROLLMENT
+  NEW_MESSAGE
+  COURSE_REVIEW
+  SYSTEM
+}
+
 // ─── Models ──────────────────────────────────────────────────────────────────
 
 model User {
@@ -59,6 +68,10 @@ model User {
   matchRequestsReceived MatchRequest[] @relation("InstructorRequests")
   courses              Course[]
   enrollments          Enrollment[]
+  reviews              Review[]
+  notifications        Notification[]
+  conversationParticipants ConversationParticipant[]
+  sentMessages         Message[]
 
   @@map("users")
 }
@@ -136,6 +149,7 @@ model Course {
   major       Major?           @relation(fields: [majorId], references: [id], onDelete: SetNull)
   enrollments Enrollment[]
   schedules   CourseSchedule[]
+  reviews     Review[]
 
   @@map("courses")
 }
@@ -172,3 +186,73 @@ model CourseSchedule {
   @@map("course_schedules")
 }
 
+model Review {
+  id          String   @id @db.Uuid
+  courseId    String   @map("course_id") @db.Uuid
+  studentId   String   @map("student_id") @db.Uuid
+  rating      Int      
+  comment     String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+  @@map("reviews")
+}
+
+model Notification {
+  id          String   @id @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  type        String   @db.VarChar(50)
+  title       String   @db.VarChar(255)
+  body        String?
+  isRead      Boolean  @default(false) @map("is_read")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Conversation {
+  id          String   @id @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  conversationId String   @map("conversation_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id          String   @id @db.Uuid
+  conversationId String   @map("conversation_id") @db.Uuid
+  senderId    String   @map("sender_id") @db.Uuid
+  content     String   @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}

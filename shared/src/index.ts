@@ -12,6 +12,15 @@ export enum MatchRequestStatus {
     REJECTED = 'REJECTED',
 }
 
+export enum NotificationTypes {
+    MATCH_REQUEST = 'MATCH_REQUEST',
+    MATCH_ACCEPTED = 'MATCH_ACCEPTED',
+    COURSE_ENROLLMENT = 'COURSE_ENROLLMENT',
+    NEW_MESSAGE = 'NEW_MESSAGE',
+    COURSE_REVIEW = 'COURSE_REVIEW',
+    SYSTEM = 'SYSTEM',
+}
+
 export interface User {
     id: string;
     username: string;
@@ -74,6 +83,7 @@ export interface Course {
     _count?: {
         enrollments: number;
     };
+    reviews?: Review[];
 }
 
 export interface CourseSchedule {
@@ -99,4 +109,59 @@ export interface Enrollment {
 
     student?: User;
     course?: Course;
+}
+
+export interface Review {
+    id: string;
+    courseId: string;
+    studentId: string;
+    rating: number;
+    comment?: string;
+    createdAt: Date | string;
+    updatedAt: Date | string;
+
+    student?: User;
+    course?: Course;
+}
+
+export interface Notification {
+    id: string;
+    userId: string;
+    type: NotificationTypes;
+    title: string;
+    body: string;
+    isRead: boolean;
+    createdAt: Date | string;
+
+    user?: User;
+}
+
+export interface Conversation {
+    id: string;
+    createdAt: Date | string;
+    updatedAt: Date | string;
+
+    participants?: ConversationParticipant[];
+    messages?: Message[];
+}
+
+export interface ConversationParticipant {
+    conversationId: string;
+    userId: string;
+    createdAt: Date | string;
+    updatedAt: Date | string;
+
+    conversation?: Conversation;
+    user?: User;
+}
+
+export interface Message {
+    id: string;
+    conversationId: string;
+    senderId: string;
+    content: string;
+    createdAt: Date | string;
+
+    conversation?: Conversation;
+    sender?: User;
 }
