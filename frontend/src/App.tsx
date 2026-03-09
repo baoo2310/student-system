@@ -26,6 +26,9 @@ import CreateCourse from './pages/Courses/CreateCourse';
 
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import Settings from './pages/Settings/Settings';
+import ProtectedRoute from './components/ProtectedRoute';
+import { UserRole } from '@shared/index';
+import Unauthorized from './pages/Unauthorized';
 
 function AppContent() {
   const dispatch = useDispatch();
@@ -96,13 +99,31 @@ function AppContent() {
 
                 {/* We just check INSTRUCTOR manually inside components, or rely on lack of API access for now */}
                 {/* For real protection, we would use a ProtectedRoute abstraction */}
-                <Route path="/my-courses" element={<MyCourses />} />
-                <Route path="/courses/create" element={<CreateCourse />} />
+                <Route path="/my-courses" element={
+                  <ProtectedRoute allowedRole={UserRole.INSTRUCTOR}>
+                    <MyCourses />
+                  </ProtectedRoute>
 
-                <Route path="/admin" element={<AdminDashboard />} />
+                }
+                />
+                <Route path="/courses/create" element={
+                  <ProtectedRoute allowedRole={UserRole.INSTRUCTOR}>
+                    <CreateCourse />
+                  </ProtectedRoute>
+
+                }
+                />
+
+                <Route path="/admin" element={
+                  <ProtectedRoute allowedRole={UserRole.ADMIN}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+                />
                 <Route path="/settings" element={<Settings />} />
 
                 <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="/unauthorized" element={<Unauthorized />} />
               </Routes>
             </main>
             <Footer />
