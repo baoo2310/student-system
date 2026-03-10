@@ -6,11 +6,22 @@ import { DayOfWeek } from '@prisma/client';
 
 export async function getAllCourses(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-        const { majorId } = req.query;
+        const { majorId, search, minPrice, maxPrice, minRating, sortBy } = req.query;
 
         const whereClause: any = {};
         if (majorId) {
             whereClause.majorId = String(majorId);
+        }
+        if (search) {
+            whereClause.OR = [
+                { title: { contains: String(search), mode: 'insensitive' } },
+                { description: { contains: String(search), mode: 'insensitive' } },
+            ];
+        }
+        if (minPrice !== undefined || maxPrice !== undefined) {
+            whereClause.price = {};
+            if (minPrice !== undefined) whereClause.price.gte = Number(minPrice);
+            if (maxPrice !== undefined) whereClause.price.lte = Number(maxPrice);
         }
 
         const courses = await prisma.course.findMany({
@@ -21,16 +32,50 @@ export async function getAllCourses(req: Request, res: Response, next: NextFunct
                 },
                 major: true,
                 schedules: true,
+                reviews: {
+                    select: { rating: true }
+                },
                 _count: {
-                    select: { enrollments: { where: { status: 'ACTIVE' } } }
+                    select: { enrollments: { where: { status: 'ACTIVE' } }, reviews: true }
                 }
             },
             orderBy: { createdAt: 'desc' }
         });
 
+        // Compute avg rating for each course
+        let coursesWithRating = courses.map(c => {
+            const ratings = c.reviews.map(r => r.rating);
+            const avgRating = ratings.length > 0 ? +(ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : 0;
+            const { reviews, ...rest } = c;
+            return { ...rest, avgRating };
+        });
+
+        // Post-DB filters and sorting
+        if (minRating !== undefined) {
+            coursesWithRating = coursesWithRating.filter(c => c.avgRating >= Number(minRating));
+        }
+
+        if (sortBy) {
+            switch (sortBy) {
+                case 'price_asc':
+                    coursesWithRating.sort((a, b) => Number(a.price) - Number(b.price));
+                    break;
+                case 'price_desc':
+                    coursesWithRating.sort((a, b) => Number(b.price) - Number(a.price));
+                    break;
+                case 'rating_desc':
+                    coursesWithRating.sort((a, b) => b.avgRating - a.avgRating);
+                    break;
+                case 'newest':
+                default:
+                    // DB already sorts by createdAt desc
+                    break;
+            }
+        }
+
         res.status(StatusCodes.OK).json({
             success: true,
-            data: courses
+            data: coursesWithRating
         });
     } catch (err) {
         next(err);
@@ -77,8 +122,14 @@ export async function getCourseById(req: Request, res: Response, next: NextFunct
                 schedules: {
                     orderBy: { dayOfWeek: 'asc' }
                 },
+                reviews: {
+                    include: {
+                        student: { select: { id: true, username: true, avatarUrl: true } }
+                    },
+                    orderBy: { createdAt: 'desc' }
+                },
                 _count: {
-                    select: { enrollments: { where: { status: 'ACTIVE' } } }
+                    select: { enrollments: { where: { status: 'ACTIVE' } }, reviews: true }
                 }
             }
         });

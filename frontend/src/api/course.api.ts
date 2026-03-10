@@ -15,9 +15,8 @@ export interface SchedulePayload {
 }
 
 export const courseApi = {
-    getAllCourses: async (majorId?: string) => {
-        const url = majorId ? `/courses?majorId=${majorId}` : '/courses';
-        const response = await api.get(url);
+    getAllCourses: async (params?: any) => {
+        const response = await api.get('/courses', { params });
         return response.data;
     },
 

@@ -11,8 +11,26 @@ export default function CourseList() {
     const { courses, isLoading, error } = useSelector((state: RootState) => state.course);
     const [majors, setMajors] = useState<any[]>([]);
     const [selectedMajor, setSelectedMajor] = useState<string>('');
+    const [search, setSearch] = useState('');
+    const [minPrice, setMinPrice] = useState('');
+    const [maxPrice, setMaxPrice] = useState('');
+    const [minRating, setMinRating] = useState('');
+    const [sortBy, setSortBy] = useState('newest');
+
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 6;
+
+    const handleApplyFilters = () => {
+        dispatch(fetchAllCourses({
+            majorId: selectedMajor || undefined,
+            search: search || undefined,
+            minPrice: minPrice || undefined,
+            maxPrice: maxPrice || undefined,
+            minRating: minRating || undefined,
+            sortBy
+        }));
+        setCurrentPage(1);
+    };
 
     useEffect(() => {
         // Fetch majors for the filter dropdown
@@ -30,8 +48,9 @@ export default function CourseList() {
     }, []);
 
     useEffect(() => {
-        dispatch(fetchAllCourses(selectedMajor || undefined));
-    }, [dispatch, selectedMajor]);
+        handleApplyFilters();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dispatch]);
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 fade-in">
@@ -45,25 +64,98 @@ export default function CourseList() {
                         Find the perfect course from our expert instructors.
                     </p>
                 </div>
+            </div>
 
-                <div className="mt-4 md:mt-0 flex items-center space-x-3">
-                    <label htmlFor="major-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Filter by Subject:
-                    </label>
-                    <select
-                        id="major-filter"
-                        value={selectedMajor}
-                        onChange={(e) => {
-                            setSelectedMajor(e.target.value);
-                            setCurrentPage(1);
-                        }}
-                        className="block w-48 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Search */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search Keywords</label>
+                        <input
+                            type="text"
+                            placeholder="Course title or description..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full px-3 py-2 border rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                        />
+                    </div>
+
+                    {/* Major */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subject</label>
+                        <select
+                            value={selectedMajor}
+                            onChange={(e) => setSelectedMajor(e.target.value)}
+                            className="w-full px-3 py-2 border rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                        >
+                            <option value="">All Subjects</option>
+                            {majors.map((m) => (
+                                <option key={m.id} value={m.id}>{m.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Price Range */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price Range ($)</label>
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="number"
+                                placeholder="Min"
+                                value={minPrice}
+                                min={0}
+                                onChange={(e) => setMinPrice(e.target.value)}
+                                className="w-1/2 px-3 py-2 border rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                            />
+                            <span className="text-gray-500">-</span>
+                            <input
+                                type="number"
+                                placeholder="Max"
+                                value={maxPrice}
+                                min={0}
+                                onChange={(e) => setMaxPrice(e.target.value)}
+                                className="w-1/2 px-3 py-2 border rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Minimum Rating */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rating</label>
+                        <select
+                            value={minRating}
+                            onChange={(e) => setMinRating(e.target.value)}
+                            className="w-full px-3 py-2 border rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                        >
+                            <option value="">Any Rating</option>
+                            <option value="4.5">4.5 & up</option>
+                            <option value="4.0">4.0 & up</option>
+                            <option value="3.5">3.5 & up</option>
+                            <option value="3.0">3.0 & up</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="mt-5 flex flex-col md:flex-row md:items-center justify-between border-t border-gray-100 dark:border-gray-700 pt-5 space-y-4 md:space-y-0">
+                    <div className="flex items-center space-x-3">
+                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Sort By:</label>
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="px-3 py-2 border rounded-md text-sm font-medium dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm"
+                        >
+                            <option value="newest">Newest</option>
+                            <option value="price_asc">Price (Low to High)</option>
+                            <option value="price_desc">Price (High to Low)</option>
+                            <option value="rating_desc">Highest Rated</option>
+                        </select>
+                    </div>
+                    <button
+                        onClick={handleApplyFilters}
+                        className="w-full md:w-auto px-8 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow-sm"
                     >
-                        <option value="">All Subjects</option>
-                        {majors.map((m) => (
-                            <option key={m.id} value={m.id}>{m.name}</option>
-                        ))}
-                    </select>
+                        Apply Filters
+                    </button>
                 </div>
             </div>
 
@@ -123,6 +215,14 @@ export default function CourseList() {
                                                 )}
                                                 {course.instructor?.username}
                                             </div>
+                                            {course.avgRating !== undefined && course.avgRating > 0 && (
+                                                <div className="flex items-center text-sm font-bold text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30 px-2 py-1 rounded-md border border-yellow-200 dark:border-yellow-700/50">
+                                                    <svg className="w-4 h-4 mr-1 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                    </svg>
+                                                    {course.avgRating.toFixed(1)}
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="flex items-center justify-between">

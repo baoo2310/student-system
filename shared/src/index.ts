@@ -84,6 +84,7 @@ export interface Course {
         enrollments: number;
     };
     reviews?: Review[];
+    avgRating?: number;
 }
 
 export interface CourseSchedule {
