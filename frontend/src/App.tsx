@@ -18,6 +18,7 @@ import Profile from './pages/Profile/Profile';
 import FindInstructors from './pages/FindInstructors/FindInstructors';
 import InstructorDetails from './pages/InstructorDetails/InstructorDetails';
 import MyMatches from './pages/MyMatches/MyMatches';
+import ChatPage from './pages/Chat/ChatPage';
 
 import CourseList from './pages/Courses/CourseList';
 import CourseDetails from './pages/Courses/CourseDetails';
@@ -93,6 +94,7 @@ function AppContent() {
                 <Route path="/instructors" element={<FindInstructors />} />
                 <Route path="/instructors/:id" element={<InstructorDetails />} />
                 <Route path="/matches" element={<MyMatches />} />
+                <Route path="/chat" element={<ChatPage />} />
 
                 <Route path="/courses" element={<CourseList />} />
                 <Route path="/courses/:id" element={<CourseDetails />} />

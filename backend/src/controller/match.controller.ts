@@ -52,7 +52,21 @@ export async function createMatchRequest(req: Request, res: Response, next: Next
                 instructor: {
                     select: { id: true, username: true, email: true, avatarUrl: true }
                 },
+                student: {
+                    select: { id: true, username: true }
+                },
                 major: true
+            }
+        });
+
+        // Notify Instructor
+        await prisma.notification.create({
+            data: {
+                id: uuidv4(),
+                userId: instructorId,
+                type: 'MATCH_REQUEST',
+                title: 'New Match Request',
+                body: `${matchRequest.student.username} sent you a match request.`
             }
         });
 
@@ -93,7 +107,21 @@ export async function updateMatchStatus(req: Request, res: Response, next: NextF
             include: {
                 student: {
                     select: { id: true, username: true, email: true, avatarUrl: true }
+                },
+                instructor: {
+                    select: { id: true, username: true }
                 }
+            }
+        });
+
+        // Notify Student
+        await prisma.notification.create({
+            data: {
+                id: uuidv4(),
+                userId: updatedRequest.studentId,
+                type: status === 'ACCEPTED' ? 'MATCH_ACCEPTED' : 'SYSTEM',
+                title: `Match Request ${status}`,
+                body: `${updatedRequest.instructor.username} has ${status.toLowerCase()} your match request.`
             }
         });
 

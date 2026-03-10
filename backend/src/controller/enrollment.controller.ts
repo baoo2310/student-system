@@ -45,6 +45,7 @@ export async function enrollInCourse(req: Request, res: Response, next: NextFunc
                 status: 'ACTIVE'
             },
             include: {
+                student: { select: { username: true } },
                 course: {
                     select: {
                         id: true,
@@ -52,6 +53,17 @@ export async function enrollInCourse(req: Request, res: Response, next: NextFunc
                         instructor: { select: { id: true, username: true } }
                     }
                 }
+            }
+        });
+
+        // Notify Instructor
+        await prisma.notification.create({
+            data: {
+                id: uuidv4(),
+                userId: enrollment.course.instructor.id,
+                type: 'COURSE_ENROLLMENT',
+                title: 'New Student Enrollment',
+                body: `${enrollment.student.username} has enrolled in your course: ${enrollment.course.title}`
             }
         });
 
