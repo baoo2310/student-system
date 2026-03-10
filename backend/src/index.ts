@@ -12,6 +12,7 @@ import courseRoutes from './routes/course.routes';
 import enrollmentRoutes from './routes/enrollment.routes';
 import adminRoutes from './routes/admin.routes';
 import settingsRoutes from './routes/settings.routes';
+import reviewRoutes from './routes/review.routes';
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 import { errorHandler } from './middleware/error.middleware';
@@ -45,6 +46,7 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // app.use('/api/users', userRoutes);       // coming soon
 // app.use('/api/match-requests', matchRequestRoutes); // coming soon

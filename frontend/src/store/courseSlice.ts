@@ -22,8 +22,8 @@ const initialState: CourseState = {
 
 export const fetchAllCourses = createAsyncThunk(
     'course/fetchAll',
-    async (majorId?: string) => {
-        const response = await courseApi.getAllCourses(majorId);
+    async (params?: any) => {
+        const response = await courseApi.getAllCourses(params);
         return response.data;
     }
 );
