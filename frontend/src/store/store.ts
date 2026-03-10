@@ -4,6 +4,7 @@ import courseReducer from './courseSlice';
 import enrollmentReducer from './enrollmentSlice';
 import adminReducer from './adminSlice';
 import reviewReducer from './reviewSlice';
+import notificationReducer from './notificationSlice';
 
 export const store = configureStore({
     reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
         enrollment: enrollmentReducer,
         admin: adminReducer,
         review: reviewReducer,
+        notification: notificationReducer,
     },
 });
 

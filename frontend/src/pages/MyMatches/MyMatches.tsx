@@ -3,11 +3,15 @@ import { useSelector } from 'react-redux';
 import { type RootState } from '../../store/store';
 import { matchApi } from '../../api/match.api';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import { chatApi } from '../../api/chat.api';
+import { ChatBubbleLeftEllipsisIcon } from '@heroicons/react/24/outline';
 
 export default function MyMatches() {
     const { currentUser } = useSelector((state: RootState) => state.user);
     const [matches, setMatches] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
 
     const fetchMatches = async () => {
         setIsLoading(true);
@@ -37,6 +41,18 @@ export default function MyMatches() {
         } catch (err: any) {
             console.error(err);
             toast.error(err?.response?.data?.message || `Failed to ${status.toLowerCase()} request.`);
+        }
+    };
+
+    const handleStartChat = async (otherUserId: string) => {
+        try {
+            const data = await chatApi.getOrCreateConversation(otherUserId);
+            if (data.success) {
+                navigate('/chat');
+            }
+        } catch (err: any) {
+            console.error(err);
+            toast.error(err?.response?.data?.message || 'Failed to start chat.');
         }
     };
 
@@ -139,14 +155,24 @@ export default function MyMatches() {
                                     </div>
                                 )}
 
-                                {isInstructor && match.status === 'ACCEPTED' && (
-                                    <div className="mt-4">
+                                {match.status === 'ACCEPTED' && (
+                                    <div className="mt-4 flex space-x-3">
                                         <button
-                                            onClick={() => handleUpdateStatus(match.id, 'COMPLETED')}
-                                            className="w-full py-1.5 px-3 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                                            onClick={() => handleStartChat(otherParty.id)}
+                                            className="flex-1 py-1.5 px-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center gap-2"
                                         >
-                                            Mark as Completed
+                                            <ChatBubbleLeftEllipsisIcon className="w-5 h-5 pointer-events-none" />
+                                            Message
                                         </button>
+
+                                        {isInstructor && (
+                                            <button
+                                                onClick={() => handleUpdateStatus(match.id, 'COMPLETED')}
+                                                className="flex-1 py-1.5 px-3 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                                            >
+                                                Mark as Completed
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                             </div>
