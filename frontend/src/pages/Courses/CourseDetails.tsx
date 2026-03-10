@@ -12,9 +12,11 @@ import {
     CurrencyDollarIcon,
     VideoCameraIcon,
     ArrowLeftIcon,
-    CheckCircleIcon
+    CheckCircleIcon,
+    PlusIcon
 } from '@heroicons/react/24/outline';
 import ReviewSection from './ReviewSection';
+import { scheduleApi } from '../../api/schedule.api';
 
 export default function CourseDetails() {
     const { id } = useParams<{ id: string }>();
@@ -26,6 +28,16 @@ export default function CourseDetails() {
     const { myEnrollments, isLoading: isEnrolling } = useSelector((state: RootState) => state.enrollment);
 
     const [isAlreadyEnrolled, setIsAlreadyEnrolled] = useState(false);
+
+    // Schedule form state
+    const [isAddingSchedule, setIsAddingSchedule] = useState(false);
+    const [scheduleForm, setScheduleForm] = useState({
+        dayOfWeek: 'MONDAY',
+        startTime: '08:00',
+        endTime: '10:00',
+        meetingLink: ''
+    });
+    const [isSubmittingSchedule, setIsSubmittingSchedule] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -57,6 +69,31 @@ export default function CourseDetails() {
         } catch (err: any) {
             // Error is handled by axios interceptor usually, but unwrap throws the rejected payload
             console.error('Enrollment Failed', err);
+        }
+    };
+
+    const handleAddSchedule = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!course) return;
+
+        setIsSubmittingSchedule(true);
+        try {
+            await scheduleApi.createSchedule({
+                courseId: course.id,
+                dayOfWeek: scheduleForm.dayOfWeek,
+                startTime: scheduleForm.startTime,
+                endTime: scheduleForm.endTime,
+                meetingLink: scheduleForm.meetingLink
+            });
+            toast.success('Schedule added successfully!');
+            setIsAddingSchedule(false);
+            setScheduleForm({ dayOfWeek: 'MONDAY', startTime: '08:00', endTime: '10:00', meetingLink: '' });
+            // Refresh course details to get new schedule
+            dispatch(fetchCourseById(course.id));
+        } catch (err) {
+            console.error('Failed to add schedule', err);
+        } finally {
+            setIsSubmittingSchedule(false);
         }
     };
 
@@ -206,10 +243,94 @@ export default function CourseDetails() {
                     {/* Right Column (Schedule) */}
                     <div>
                         <div className="bg-blue-50 dark:bg-gray-800 rounded-2xl p-6 border border-blue-100 dark:border-gray-700 sticky top-24">
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
-                                <ClockIcon className="w-6 h-6 mr-2 text-blue-600 dark:text-blue-400" />
-                                Course Schedule
-                            </h2>
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                                    <ClockIcon className="w-6 h-6 mr-2 text-blue-600 dark:text-blue-400" />
+                                    Course Schedule
+                                </h2>
+                                {isOwner && (
+                                    <button
+                                        onClick={() => setIsAddingSchedule(!isAddingSchedule)}
+                                        className="p-1.5 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-800 rounded-lg transition-colors"
+                                        title="Add Schedule"
+                                    >
+                                        <PlusIcon className="w-5 h-5" />
+                                    </button>
+                                )}
+                            </div>
+
+                            {isAddingSchedule && isOwner && (
+                                <form onSubmit={handleAddSchedule} className="mb-6 bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm text-sm">
+                                    <h3 className="font-bold text-gray-900 dark:text-white mb-3">Add New Session</h3>
+
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Day of Week</label>
+                                            <select
+                                                value={scheduleForm.dayOfWeek}
+                                                onChange={(e) => setScheduleForm({ ...scheduleForm, dayOfWeek: e.target.value })}
+                                                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                            >
+                                                <option value="MONDAY">Monday</option>
+                                                <option value="TUESDAY">Tuesday</option>
+                                                <option value="WEDNESDAY">Wednesday</option>
+                                                <option value="THURSDAY">Thursday</option>
+                                                <option value="FRIDAY">Friday</option>
+                                                <option value="SATURDAY">Saturday</option>
+                                                <option value="SUNDAY">Sunday</option>
+                                            </select>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start Time</label>
+                                                <input
+                                                    type="time"
+                                                    required
+                                                    value={scheduleForm.startTime}
+                                                    onChange={(e) => setScheduleForm({ ...scheduleForm, startTime: e.target.value })}
+                                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">End Time</label>
+                                                <input
+                                                    type="time"
+                                                    required
+                                                    value={scheduleForm.endTime}
+                                                    onChange={(e) => setScheduleForm({ ...scheduleForm, endTime: e.target.value })}
+                                                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Meeting Link (Optional)</label>
+                                            <input
+                                                type="url"
+                                                placeholder="https://zoom.us/j/..."
+                                                value={scheduleForm.meetingLink}
+                                                onChange={(e) => setScheduleForm({ ...scheduleForm, meetingLink: e.target.value })}
+                                                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                            />
+                                        </div>
+                                        <div className="flex gap-2 pt-2">
+                                            <button
+                                                type="submit"
+                                                disabled={isSubmittingSchedule}
+                                                className="flex-1 bg-blue-600 text-white font-medium py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                                            >
+                                                {isSubmittingSchedule ? 'Saving...' : 'Save'}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsAddingSchedule(false)}
+                                                className="px-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 font-medium rounded-lg"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            )}
 
                             {course.schedules && course.schedules.length > 0 ? (
                                 <ul className="space-y-4">

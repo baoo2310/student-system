@@ -19,6 +19,7 @@ import FindInstructors from './pages/FindInstructors/FindInstructors';
 import InstructorDetails from './pages/InstructorDetails/InstructorDetails';
 import MyMatches from './pages/MyMatches/MyMatches';
 import ChatPage from './pages/Chat/ChatPage';
+import SchedulePage from './pages/Schedule/SchedulePage';
 
 import CourseList from './pages/Courses/CourseList';
 import CourseDetails from './pages/Courses/CourseDetails';
@@ -90,14 +91,18 @@ function AppContent() {
               <Routes>
                 <Route path="/" element={<Navigate to="/home" replace />} />
                 <Route path="/home" element={<Home />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/instructors" element={<FindInstructors />} />
-                <Route path="/instructors/:id" element={<InstructorDetails />} />
-                <Route path="/matches" element={<MyMatches />} />
-                <Route path="/chat" element={<ChatPage />} />
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/instructors" element={<FindInstructors />} />
+                  <Route path="/instructors/:id" element={<InstructorDetails />} />
+                  <Route path="/matches" element={<MyMatches />} />
+                  <Route path="/chat" element={<ChatPage />} />
+                  <Route path="/schedule" element={<SchedulePage />} />
 
-                <Route path="/courses" element={<CourseList />} />
-                <Route path="/courses/:id" element={<CourseDetails />} />
+                  <Route path="/courses" element={<CourseList />} />
+                  <Route path="/courses/:id" element={<CourseDetails />} />
+                  <Route path="/settings" element={<Settings />} />
+                </Route>
 
                 {/* We just check INSTRUCTOR manually inside components, or rely on lack of API access for now */}
                 {/* For real protection, we would use a ProtectedRoute abstraction */}
@@ -122,10 +127,10 @@ function AppContent() {
                   </ProtectedRoute>
                 }
                 />
-                <Route path="/settings" element={<Settings />} />
 
-                <Route path="*" element={<Navigate to="/" replace />} />
+
                 <Route path="/unauthorized" element={<Unauthorized />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
             <Footer />
