@@ -17,6 +17,7 @@ import settingsRoutes from './routes/settings.routes';
 import reviewRoutes from './routes/review.routes';
 import notificationRoutes from './routes/notification.routes';
 import chatRoutes from './routes/chat.routes';
+import scheduleRoutes from './routes/schedule.routes';
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 import { errorHandler } from './middleware/error.middleware';
@@ -82,6 +83,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/schedule', scheduleRoutes);
 
 // app.use('/api/users', userRoutes);       // coming soon
 // app.use('/api/match-requests', matchRequestRoutes); // coming soon
