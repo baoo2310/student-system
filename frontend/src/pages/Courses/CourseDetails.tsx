@@ -335,8 +335,14 @@ export default function CourseDetails() {
                             {course.schedules && course.schedules.length > 0 ? (
                                 <ul className="space-y-4">
                                     {course.schedules.map((schedule) => {
-                                        const startTime = new Date(schedule.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                        const endTime = new Date(schedule.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                        const fmtUtc = (iso: string) => {
+                                            const d = new Date(iso);
+                                            const h = String(d.getUTCHours()).padStart(2, '0');
+                                            const m = String(d.getUTCMinutes()).padStart(2, '0');
+                                            return `${h}:${m}`;
+                                        };
+                                        const startTime = fmtUtc(String(schedule.startTime));
+                                        const endTime = fmtUtc(String(schedule.endTime));
 
                                         return (
                                             <li key={schedule.id} className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
