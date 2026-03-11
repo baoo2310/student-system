@@ -51,6 +51,9 @@ export default function AppBar() {
                         <Link to="/schedule" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
                             Schedule
                         </Link>
+                        <Link to="/analytics" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                            Analytics
+                        </Link>
 
                         {currentUser?.role === UserRole.ADMIN && (
                             <Link to="/admin" className="text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300">
@@ -110,6 +113,9 @@ export default function AppBar() {
                         </Link>
                         <Link to="/schedule" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-white">
                             Schedule
+                        </Link>
+                        <Link to="/analytics" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-white">
+                            Analytics
                         </Link>
                         {currentUser?.role === UserRole.ADMIN && (
                             <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10">
