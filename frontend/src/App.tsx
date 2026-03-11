@@ -20,6 +20,7 @@ import InstructorDetails from './pages/InstructorDetails/InstructorDetails';
 import MyMatches from './pages/MyMatches/MyMatches';
 import ChatPage from './pages/Chat/ChatPage';
 import SchedulePage from './pages/Schedule/SchedulePage';
+import AnalyticsPage from './pages/Analytics/AnalyticsPage';
 
 import CourseList from './pages/Courses/CourseList';
 import CourseDetails from './pages/Courses/CourseDetails';
@@ -98,6 +99,7 @@ function AppContent() {
                   <Route path="/matches" element={<MyMatches />} />
                   <Route path="/chat" element={<ChatPage />} />
                   <Route path="/schedule" element={<SchedulePage />} />
+                  <Route path="/analytics" element={<AnalyticsPage />} />
 
                   <Route path="/courses" element={<CourseList />} />
                   <Route path="/courses/:id" element={<CourseDetails />} />
