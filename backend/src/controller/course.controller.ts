@@ -277,12 +277,21 @@ export async function addCourseSchedule(req: Request, res: Response, next: NextF
             return;
         }
 
-        // Convert ISO strings to Date objects for time fields
-        const startDate = new Date(startTime);
-        const endDate = new Date(endTime);
+        // Parse HH:mm strings (from <input type="time">) into UTC Date objects
+        const parseHHmm = (hhmm: string): Date | null => {
+            const parts = hhmm.split(':');
+            if (parts.length < 2) return null;
+            const h = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10);
+            if (isNaN(h) || isNaN(m)) return null;
+            return new Date(Date.UTC(1970, 0, 1, h, m, 0, 0));
+        };
 
-        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-            res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: 'Invalid start or end time format.' });
+        const startDate = parseHHmm(startTime);
+        const endDate = parseHHmm(endTime);
+
+        if (!startDate || !endDate) {
+            res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: 'Invalid time format. Expected HH:mm.' });
             return;
         }
 

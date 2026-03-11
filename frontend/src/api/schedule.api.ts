@@ -6,6 +6,7 @@ export interface ScheduleEvent {
     dayOfWeek: string;
     startTime: string; // e.g., "10:00"
     endTime: string;   // e.g., "11:30"
+    meetingLink?: string | null;
     isRecurring: boolean;
     courseDetails?: {
         id: string;
